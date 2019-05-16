@@ -31,17 +31,18 @@ public class CostConstraint implements Constraint<Datacenter> {
     }
 
     public List<Datacenter> apply(ConstraintContext context) {
-        List<Datacenter> datacenters = context.getPossibleDCs();
         List<Datacenter> possibleDCs = new ArrayList();
 
-        for (Datacenter dc : datacenters) {
+        for (Datacenter dc : context.getPossibleDCs()) {
             CostInfo costInfo = dc.getCostInfo();
 
-            if ((this.maxPerBW != 0 && this.maxPerBW > costInfo.getCostPerBw())
-                    || (this.maxPerMem != 0 && this.maxPerMem > costInfo.getCostPerMem())
-                    || (this.maxPerStorage != 0 && this.maxPerStorage > costInfo.getCostPerStorage())
-                    || (this.maxPerSec != 0 && this.maxPerStorage > costInfo.getCostPerStorage()))
-                possibleDCs.add(dc);
+            if ((this.maxPerBW != 0 && this.maxPerBW < costInfo.getCostPerBw())
+                    || (this.maxPerMem != 0 && this.maxPerMem < costInfo.getCostPerMem())
+                    || (this.maxPerStorage != 0 && this.maxPerStorage < costInfo.getCostPerStorage())
+                    || (this.maxPerSec != 0 && this.maxPerStorage < costInfo.getCostPerStorage()))
+                continue;
+
+            possibleDCs.add(dc);
         }
         return possibleDCs;
     }

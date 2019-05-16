@@ -3,9 +3,11 @@ package optvm.entities;
 import optvm.entities.vos.EnergyInfo;
 import optvm.entities.vos.Hardware;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
-public class Host {
+public class Host implements Serializable {
 
     private String id;
     private boolean active;
@@ -16,8 +18,11 @@ public class Host {
     private EnergyInfo energyInfo;
     private Hardware hardware;
     private List<VM> vms;
+    private List<VM> migratingVMs;
 
     public Host() {
+        this.vms = new ArrayList();
+        this.migratingVMs = new ArrayList();
     }
 
     public Host(boolean active, long bandwidth, int hops, long requiredMemory, EnergyInfo energyInfo, String hipervisor,
@@ -93,6 +98,14 @@ public class Host {
 
     public void setHardware(Hardware hardware) {
         this.hardware = hardware;
+    }
+
+    public List<VM> getMigratingVMs() {
+        return migratingVMs;
+    }
+
+    public void setMigratingVMs(List<VM> migratingVMs) {
+        this.migratingVMs = migratingVMs;
     }
 
     public String getId() {

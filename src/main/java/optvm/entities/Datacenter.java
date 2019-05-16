@@ -4,10 +4,11 @@ import optvm.entities.constants.OS;
 import optvm.entities.vos.CostInfo;
 import optvm.entities.vos.Localization;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Datacenter {
+public class Datacenter implements Serializable {
 
     private String id;
     private String architecture;
@@ -78,5 +79,4 @@ public class Datacenter {
     public void setId(String id) {
         this.id = id;
     }
-
 }

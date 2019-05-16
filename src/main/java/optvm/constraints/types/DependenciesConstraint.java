@@ -4,20 +4,19 @@ import optvm.constraints.Constraint;
 import optvm.constraints.ConstraintContext;
 
 import optvm.entities.Datacenter;
-import optvm.entities.constants.OS;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DependenciesConstraint implements Constraint<Datacenter> {
 
-    private OS neededOS;
+    private String neededOS;
 
     public DependenciesConstraint() {
         this.neededOS = null;
     }
 
-    public DependenciesConstraint(OS neededOS) {
+    public DependenciesConstraint(String neededOS) {
         this.neededOS = neededOS;
     }
 
@@ -25,7 +24,7 @@ public class DependenciesConstraint implements Constraint<Datacenter> {
         List<Datacenter> possibleDCs = new ArrayList();
 
         for (Datacenter dc : context.getPossibleDCs()) {
-            if (this.neededOS.equals(dc.getOs()))
+            if (this.neededOS != null && this.neededOS.equals(dc.getOs()))
                 possibleDCs.add(dc);
         }
         return possibleDCs;
@@ -35,11 +34,11 @@ public class DependenciesConstraint implements Constraint<Datacenter> {
         return ConstraintType.DC;
     }
 
-    public OS getNeededOS() {
+    public String getNeededOS() {
         return neededOS;
     }
 
-    public void setNeededOS(OS neededOS) {
+    public void setNeededOS(String neededOS) {
         this.neededOS = neededOS;
     }
 }

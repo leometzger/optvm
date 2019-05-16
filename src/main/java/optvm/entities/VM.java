@@ -1,6 +1,8 @@
 package optvm.entities;
 
-public class VM {
+import java.io.Serializable;
+
+public class VM implements Serializable {
 
     private long ram;
     private int storage;
@@ -10,6 +12,7 @@ public class VM {
     private long dirtyPages;
     private long userId;
     private long csId;
+    private int iter;
 
     public VM() {
     }
@@ -78,4 +81,11 @@ public class VM {
         this.dirtyPages = dirtyPages;
     }
 
+    public int getIter() {
+        return iter;
+    }
+
+    public void setIter(int iter) {
+        this.iter = iter;
+    }
 }

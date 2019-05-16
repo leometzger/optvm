@@ -1,6 +1,8 @@
 package optvm.entities.vos;
 
-public class BandwidthInfo {
+import java.io.Serializable;
+
+public class BandwidthInfo implements Serializable {
 
     private long speed;
 

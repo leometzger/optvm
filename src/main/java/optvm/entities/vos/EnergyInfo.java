@@ -1,6 +1,8 @@
 package optvm.entities.vos;
 
-public class EnergyInfo {
+import java.io.Serializable;
+
+public class EnergyInfo implements Serializable {
 
     private long pMin;
     private long pMax;

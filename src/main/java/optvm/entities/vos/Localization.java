@@ -1,6 +1,8 @@
 package optvm.entities.vos;
 
-public class Localization {
+import java.io.Serializable;
+
+public class Localization implements Serializable {
 
     private int timeZone;
     private String country;

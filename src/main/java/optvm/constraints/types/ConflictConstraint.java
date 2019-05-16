@@ -17,7 +17,7 @@ public class ConflictConstraint implements Constraint {
     }
 
     public List<Datacenter> apply(ConstraintContext context) {
-        List<Datacenter> possibleDCs = new ArrayList<Datacenter>();
+        List<Datacenter> possibleDCs = new ArrayList();
         String vmCountry = context.getFromDC().getLocalization().getCountry();
 
         for (Datacenter dc : context.getPossibleDCs()) {

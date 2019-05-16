@@ -49,7 +49,7 @@ public class ConstraintRequestBuilder {
         return this;
     }
 
-    public ConstraintRequestBuilder withDependencies(OS neededOs) {
+    public ConstraintRequestBuilder withDependencies(String neededOs) {
         this.dependenciesConstraint = new DependenciesConstraint(neededOs);
         return this;
     }

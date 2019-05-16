@@ -1,6 +1,8 @@
 package optvm.entities.vos;
 
-public class CostInfo {
+import java.io.Serializable;
+
+public class CostInfo implements Serializable {
 
     private double costPerSec;
     private double costPerMem;

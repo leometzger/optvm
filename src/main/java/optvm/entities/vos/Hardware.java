@@ -1,17 +1,20 @@
 package optvm.entities.vos;
 
-public class Hardware {
+import java.io.Serializable;
+
+public class Hardware implements Serializable {
 
     private long ram;
+    private int cores;
+    private long mips;
     private long storage;
-    private CpuInfo cpu;
 
-    public Hardware() {
-    }
+    public Hardware() {}
 
-    public Hardware(long ram, long storage, CpuInfo cpuInfo) {
+    public Hardware(long ram, int cores, long mips, long storage) {
         this.ram = ram;
-        this.cpu = cpuInfo;
+        this.cores = cores;
+        this.mips = mips;
         this.storage = storage;
     }
 
@@ -23,10 +26,6 @@ public class Hardware {
         return ram;
     }
 
-    public CpuInfo getCpu() {
-        return cpu;
-    }
-
     public void setRam(long ram) {
         this.ram = ram;
     }
@@ -35,7 +34,23 @@ public class Hardware {
         this.storage = storage;
     }
 
-    public void setCpu(CpuInfo cpu) {
-        this.cpu = cpu;
+    public long getCapacity() {
+        return this.cores * this.mips;
+    }
+
+    public int getCores() {
+        return cores;
+    }
+
+    public long getMips() {
+        return mips;
+    }
+
+    public void setCores(int cores) {
+        this.cores = cores;
+    }
+
+    public void setMips(long mips) {
+        this.mips = mips;
     }
 }

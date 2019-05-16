@@ -13,6 +13,8 @@ public class CohabitationConstraint implements Constraint<Host> {
     private boolean needToBeNeighbor;
     private boolean notInSameHost;
 
+    public CohabitationConstraint() {}
+
     public CohabitationConstraint(boolean needToBeNeighbor, boolean notInSameHost) {
         this.needToBeNeighbor = needToBeNeighbor;
         this.notInSameHost = notInSameHost;
@@ -23,7 +25,7 @@ public class CohabitationConstraint implements Constraint<Host> {
         int vmDistance = context.getFromHost().getHops();
 
         if (!needToBeNeighbor && !notInSameHost)
-            return possibleHosts;
+            return context.getPossibleHosts();
 
         for (Host host : context.getPossibleHosts()) {
             int distance = Math.abs(host.getHops() - vmDistance);

@@ -1,93 +1,120 @@
 package optvm.optimization;
 
+import optvm.entities.Host;
 import optvm.entities.VM;
-import optvm.entities.constants.Objective;
+import optvm.entities.vos.EnergyInfo;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.variable.EncodingUtils;
-import org.moeaframework.core.variable.RealVariable;
 import org.moeaframework.problem.AbstractProblem;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class OptvmProblem extends AbstractProblem {
 
     private final VM vm;
-    private final Environment environment;
-    private final ContingencyThreshholds contThreshHolds;
-    private final List<Objective> objectives;
+    private final List<String> objectives;
+    private final List<Host> hosts;
+    private final Host sourceHost;
+    private final int subsetSize;
 
-    public OptvmProblem(List<Objective> objectives, VM vm, Environment environment,
-            ContingencyThreshholds threshHolds) {
-        super(11, objectives.size());
+    public OptvmProblem(
+            List<String> objectives,
+            VM vm,
+            List<Host> hosts,
+            Host sourceHost,
+            int subsetSize
+        ) {
+        super(subsetSize, objectives.size());
 
         this.vm = vm;
         this.objectives = objectives;
-        this.environment = environment;
-        this.contThreshHolds = threshHolds;
+        this.hosts = hosts;
+        this.sourceHost = sourceHost;
+        this.subsetSize = subsetSize;
     }
 
-    private boolean hasObjective(Objective objective) {
-        return this.objectives.stream().anyMatch(obj -> obj.equals(objective));
+    private boolean hasObjective(String objective) {
+        return this.objectives.stream().anyMatch(obj -> obj.equalsIgnoreCase(objective));
     }
 
     @Override
     public void evaluate(Solution solution) {
-        double[] x = EncodingUtils.getReal(solution);
         int i = 0;
+        double[] objectives = new double[this.numberOfObjectives];
+        List<Host> hosts = new ArrayList();
 
-        if (this.hasObjective(Objective.MIN_ENERGY_CONSUMPTION)) {
-            double pmin = x[0];
-            double pmax = x[1];
-            double cpuUsage = x[2];
+        for(int k = 0; k < this.subsetSize; ++k)  {
+            int index = EncodingUtils.getInt(solution.getVariable(k));
+            hosts.add(this.hosts.get(index));
+        }
 
-            double energ = (pmax - pmin) * cpuUsage * pmin;
-            solution.setObjective(i, energ);
+        if (this.hasObjective("MIN_ENERGY_CONSUMPTION")) {
+            double energyCost = 0;
+
+            for(Host host : hosts) {
+                EnergyInfo energyInfo = host.getEnergyInfo();
+                energyCost += (energyInfo.getpMax() - energyInfo.getpMin()) * energyInfo.getCpuUsage() + energyInfo.getpMin();
+            }
+
+            objectives[i] = energyCost;
             i++;
         }
 
-        if (this.hasObjective(Objective.MIN_INSTALLATION_TIME)) {
-            double distance = x[3];
-            double data = this.vm.getDirtyPages() + this.vm.getSize();
+        if (this.hasObjective("MIN_INSTALLATION_TIME")) {
+            double reconf = 0;
 
-            double traf = (data / distance) + ((distance - 1) * this.environment.getProcessingFactor());
-            double cont = 0;
+            for(Host host : hosts) {
+                List<VM> allVMs = new ArrayList();
+                allVMs.addAll(host.getVms());
+                allVMs.addAll(host.getMigratingVMs());
 
-            double dmig = traf + cont;
-            solution.setObjective(i, dmig);
+                double memory = 0;
+                for(VM vm : allVMs) {
+                    memory += vm.getRam();
+                }
+
+                double tfix = memory / host.getBandwidth();
+                reconf += (vm.getDirtyPages() * vm.getIter() + this.vm.getRam()) / this.vm.getBw() + tfix;
+            }
+
+            objectives[i] = reconf;
             i++;
         }
 
-        if (this.hasObjective(Objective.MIN_MIGRATION_OVERLOAD)) {
-            double memoryRequiredByOtherVMs = x[10];
-            double bandwidth = x[7];
+        if (this.hasObjective("MIN_MIGRATION_OVERLOAD")) {
+            double migrationOverload = 0;
 
-            double tfix = memoryRequiredByOtherVMs / bandwidth;
-            double iter = this.environment.getInteractions();
-            double dirtyPages = this.vm.getDirtyPages();
-            double vmMemory = this.vm.getCurrentAllocatedMemory();
+            migrationOverload += (this.sourceHost.getBandwidth() * 0.8)
+                    + (this.sourceHost.getHardware().getStorage() * 0.6)
+                    + (this.sourceHost.getHardware().getRam() * 0.4)
+                    + (this.sourceHost.getHardware().getCores() * 0.1);
 
-            double treconf = (((dirtyPages * iter) + vmMemory) / bandwidth) + tfix;
-            solution.setObjective(i, treconf);
+            for(Host host : hosts) {
+
+            migrationOverload += (host.getBandwidth() * 0.8)
+                    + (host.getHardware().getStorage() * 0.6)
+                    + (host.getHardware().getRam() * 0.4)
+                    + (host.getHardware().getCores() * 0.1);
+            }
+            objectives[i] = migrationOverload;
         }
+
+        solution.setObjectives(objectives);
     }
 
     @Override
-    public OptvmSolution newSolution() {
-        OptvmSolution solution = new OptvmSolution(this.numberOfVariables, this.numberOfObjectives);
+    public String getName() {
+        return "OptVM";
+    }
 
-        solution.setAttribute("ID", new RealVariable(0, 1000000));
+    @Override
+    public Solution newSolution() {
+        Solution solution = new Solution(this.subsetSize, this.objectives.size());
 
-        solution.setVariable(0, EncodingUtils.newReal(0, 5)); // pmin
-        solution.setVariable(1, EncodingUtils.newReal(0, 5)); // pmax
-        solution.setVariable(2, EncodingUtils.newReal(0, 100)); // Ucpui
-        solution.setVariable(3, EncodingUtils.newInt(0, 100)); // distance
-        solution.setVariable(4, EncodingUtils.newReal(0, 1000000)); // memory
-        solution.setVariable(5, EncodingUtils.newReal(0, 1000000)); // cpu
-        solution.setVariable(6, EncodingUtils.newReal(0, 1000000)); // storage
-        solution.setVariable(7, EncodingUtils.newReal(0, 1000000)); // bw
-        solution.setVariable(8, EncodingUtils.newReal(0, 10)); // pe
-        solution.setVariable(9, EncodingUtils.newReal(0, 1000000)); // mips
-        solution.setVariable(10, EncodingUtils.newReal(0, 1000000)); // memoria requerida por outras vms
-
+        for(int i = 0; i < this.subsetSize; ++i) {
+            solution.setVariable(i, EncodingUtils.newInt(0, this.hosts.size() - 1));
+        }
         return solution;
     }
 }

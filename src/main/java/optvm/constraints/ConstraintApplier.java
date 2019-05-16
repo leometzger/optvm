@@ -41,10 +41,11 @@ public class ConstraintApplier {
             default:
                 break;
             }
+
+            this.context.removeUnreachableDCs();
+            this.context.removeUnreachableClouds();
         }
 
-        this.context.removeUnreachableDCs();
-        this.context.removeUnreachableClouds();
         return this.context.getPossibleTargets();
     }
 
