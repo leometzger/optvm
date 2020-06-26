@@ -1,4 +1,4 @@
-# optvm
+# OptVM
 
 OptVM é um programa feito durante o meu TCC em bacharelado em Sistemas de Informação. O objetivo
 do trabalho era fazer uma otimização na seleção de possíveis VMs para fazer uma migração.
